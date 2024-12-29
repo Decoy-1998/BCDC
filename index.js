@@ -22,9 +22,7 @@ function initializeScript() {
         Description: "Log all server messages",
         Priority: 0,
         Callback: (data, sender, msg, metadata) => {
-            console.log(`Received message of type: ${data.Type}`, data);
             if (data.Type === "Action" && ["ServerEnter", "ServerLeave", "ServerDisconnect", "ServerBan", "ServerKick"].some(m => data.Content.startsWith(m))) {
-                console.log(`Enter/Leave message: ${data.Content}`);
                 let action;
                 if (data.Content.startsWith("ServerEnter")) {
                     action = "entered";
