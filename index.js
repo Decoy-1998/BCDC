@@ -5,7 +5,7 @@ const allowedPlayerId = 187699; // Replace with the allowed player's ID
 function initializeScript() {
     ChatRoomRegisterMessageHandler({
         Description: "Checks for all messages and responds to specific members",
-        Priority: 0,
+        Priority: 100000,
         Callback: (data, sender, msg, metadata) => {
             if (data?.Sender == 187699) return; // Ignore messages from this sender
             if (metadata?.SourceCharacter?.MemberNumber !== metadata?.TargetCharacter?.MemberNumber) return;
@@ -15,6 +15,32 @@ function initializeScript() {
 
             const response = `${metadata.senderName} - ${data.Sender}: ${filteredMsg}`; // response message
             sendToWebhook(response); // send response to Discord webhook
+        }
+    });
+
+    ChatRoomRegisterMessageHandler({
+        Description: "Log all server messages",
+        Priority: 0,
+        Callback: (data, sender, msg, metadata) => {
+            console.log(`Received message of type: ${data.Type}`, data);
+            if (data.Type === "Action" && ["ServerEnter", "ServerLeave", "ServerDisconnect", "ServerBan", "ServerKick"].some(m => data.Content.startsWith(m))) {
+                console.log(`Enter/Leave message: ${data.Content}`);
+                let action;
+                if (data.Content.startsWith("ServerEnter")) {
+                    action = "entered";
+                } else if (data.Content.startsWith("ServerLeave")) {
+                    action = "left";
+                } else if (data.Content.startsWith("ServerDisconnect")) {
+                    action = "disconnected from";
+                } else if (data.Content.startsWith("ServerBan")) {
+                    action = "was banned from";
+                } else if (data.Content.startsWith("ServerKick")) {
+                    action = "was kicked from";
+                }
+                const message = `${metadata.senderName} ${action} the Kitty Palace`;
+                sendToWebhook(message);
+            }
+            return false;
         }
     });
 
